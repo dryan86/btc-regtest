@@ -1,0 +1,108 @@
+version: '3.4'
+
+networks:
+  bitcoin_network:  # Define a custom network
+    driver: bridge
+
+services:
+  bitcoind:
+    image: ruimarinho/bitcoin-core:23
+    volumes:
+      - bitcoin-data:/bitcoin/.bitcoin
+    networks:
+      - bitcoin_network  # Assign the service to the custom network
+    command:
+      - -rpcauth=user:dXNlcjpwYXNz # user=user password=pass
+      - -datadir=/bitcoin/.bitcoin
+      - -printtoconsole=1
+      - -regtest=1
+      - -server=1
+      - -rest=1
+      - -rpcallowip=0.0.0.0/0
+      - -fallbackfee=0.00001
+      - -rpcbind=0.0.0.0
+    ports:
+      - '18443:18443' # rpc port
+    
+  bitcoin-init:
+    image: appropriate/curl
+    depends_on:
+      - bitcoind
+    networks:
+      - bitcoin_network  # Assign the service to the custom network
+    command: >
+      /bin/sh -c "
+        sleep 10;
+        while ! nc -z bitcoind 18443; do sleep 1; done;
+        curl --user user:pass --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getnewaddress\", \"params\": [] }' -H 'content-type: text/plain;' http://bitcoind:18443/;
+        curl --user user:pass --data-binary '{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"generatetoaddress\", \"params\": [140, \"put_the_new_address_here\"] }' -H 'content-type: text/plain;' http://bitcoind:18443/;
+      "
+
+  mempool-web:
+    image: mempool/frontend:latest
+    command: "./wait-for mempool-db:3306 --timeout=720 -- nginx -g 'daemon off;'"
+    environment:
+      FRONTEND_HTTP_PORT: "8080"
+      BACKEND_MAINNET_HTTP_HOST: "mempool-api"
+    restart: on-failure
+    networks:
+      - bitcoin_network  # Assign the service to the custom network
+    ports:
+      - 1234:8080
+
+  mempool-api:
+    image: mempool/backend:latest
+    command: "./wait-for-it.sh mempool-db:3306 --timeout=720 --strict -- ./start.sh"
+    environment:
+      MEMPOOL_BACKEND: "electrum"
+      ELECTRUM_HOST: "mempool-electrs"
+      ELECTRUM_PORT: "50001"
+      ELECTRUM_TLS_ENABLED: "false"
+      CORE_RPC_HOST: "bitcoind"
+      CORE_RPC_PORT: "18443"
+      CORE_RPC_USERNAME: "user"
+      CORE_RPC_PASSWORD: "pass"
+      DATABASE_ENABLED: "true"
+      DATABASE_HOST: "mempool-db"
+      DATABASE_DATABASE: "mempool"
+      DATABASE_USERNAME: "mempool"
+      DATABASE_PASSWORD: "mempool"
+      STATISTICS_ENABLED: "true"
+    restart: on-failure
+    networks:
+      - bitcoin_network  # Assign the service to the custom network
+
+  mempool-db:
+    image: mariadb:10.5.8
+    environment:
+      MYSQL_DATABASE: "mempool"
+      MYSQL_USER: "mempool"
+      MYSQL_PASSWORD: "mempool"
+      MYSQL_ROOT_PASSWORD: "admin"
+    restart: on-failure
+    networks:
+      - bitcoin_network  # Assign the service to the custom network
+
+  mempool-electrs:
+    image: electrs:latest
+    volumes:
+      - bitcoin-data:/var/.bitcoin/data:ro
+      - ./.cookie:/var/.bitcoin/.cookie
+    command:
+      - electrs
+      - --cookie-file=/var/.bitcoin/.cookie
+      - --daemon-rpc-addr=bitcoind:18443
+      - --daemon-p2p-addr=bitcoind:18444
+      - --daemon-dir=/var/.bitcoin/data
+      - --db-dir=/var/db
+      - --network=regtest
+      - --electrum-rpc-addr=0.0.0.0:50001
+      - --log-filters=INFO
+    restart: on-failure
+    networks:
+      - bitcoin_network  # Assign the service to the custom network
+    ports:
+      - 50001:50001
+
+volumes:
+  bitcoin-data:
