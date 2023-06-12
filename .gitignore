@@ -1,1 +1,10 @@
 .vscode
+
+/mysql_data
+!/mysql_data/.keep
+
+/electrs_data
+!/electrs_data/.keep
+
+/bitcoin_data
+!/bitcoin_data/.keep
