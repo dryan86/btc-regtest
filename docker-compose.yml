@@ -13,6 +13,8 @@ services:
       - -server=1
       - -rest=1
       - -rpcallowip=0.0.0.0/0
+      - -rpcallowip=172.18.0.0/16
+      - -txindex=1 
       - -rpcbind=0.0.0.0:18443
       - -rpcport=18443
       - -port=18444
@@ -56,14 +58,14 @@ services:
       MEMPOOL_WEBSITE_URL: https://mempool.space
       LIQUID_WEBSITE_URL: https://liquid.network
       BISQ_WEBSITE_URL: https://bisq.markets
-      MINING_DASHBOARD: true
+      MINING_DASHBOARD: false
       AUDIT: false
       MAINNET_BLOCK_AUDIT_START_HEIGHT: 0
       TESTNET_BLOCK_AUDIT_START_HEIGHT: 0
       SIGNET_BLOCK_AUDIT_START_HEIGHT: 0
       LIGHTNING: false
       FULL_RBF_ENABLED: false
-      HISTORICAL_PRICE: true
+      HISTORICAL_PRICE: false
 
     restart: on-failure
     ports:
