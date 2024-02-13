@@ -2,23 +2,25 @@ version: '3.9'
 
 services:
   bitcoind:
-    image: ruimarinho/bitcoin-core:23
+    image: ruimarinho/bitcoin-core:24
+    environment:
+      BITCOIN_DATA: /bitcoin_data
     volumes:
-      - ./bitcoind_data:/bitcoind_data
+      - ./bitcoin_data:/bitcoin_data
     command:
       # user=mempool password=mempool
-      - -rpcauth=mempool:566ace4b8835ffc2b6afe62bc9572f46$$71289034ea88f6a9e78af51c5b2f2501a2f3c3b47e9cdcfca773353d61996734
-      - -printtoconsole=1
-      - -regtest=1
-      - -server=1
-      - -rest=1
-      - -rpcallowip=0.0.0.0/0
-      - -rpcallowip=172.16/12
-      - -txindex=1 
-      - -rpcbind=0.0.0.0:18443
-      - -rpcport=18443
-      - -port=18444
-      - -datadir=/bitcoind_data
+      --datadir=/bitcoin_data/
+      --rpcauth=mempool:566ace4b8835ffc2b6afe62bc9572f46$$71289034ea88f6a9e78af51c5b2f2501a2f3c3b47e9cdcfca773353d61996734
+      --printtoconsole=1
+      --regtest=1
+      --server=1
+      --rest=1
+      --rpcallowip=0.0.0.0/0
+      --rpcallowip=172.16/12
+      --txindex=1 
+      --rpcbind=0.0.0.0:18443
+      --rpcport=18443
+      --port=18444
     ports:
       - '18443:18443' # rpc port
       - '18444:18444' # p2p port
@@ -113,7 +115,7 @@ services:
       CORE_RPC_TIMEOUT: 60000
 
       ELECTRUM_HOST: mempool-electrs
-      ELECTRUM_PORT: 60001
+      ELECTRUM_PORT: 60401
       ELECTRUM_TLS_ENABLED: false
 
       DATABASE_ENABLED: true
@@ -144,33 +146,26 @@ services:
       - '3310:3310'
 
   mempool-electrs:
-    image: electrs:0.9.14
-    environment:
-      ELECTRS_DAEMON_RPC_ADDR: bitcoind:18443
-      ELECTRS_DAEMON_P2P_ADDR: bitcoind:18444
-      ELECTRS_ELECTRUM_RPC_ADDR: mempool-electrs:60001
-      ELECTRS_MONITORING_ADDR: mempool-electrs:25225
-      ELECTRS_NETWORK: regtest
-      ELECTRS_DB_DIR: /data
-      ELECTRS_LOG_FILTERS: INFO
-    command:
-      electrs --conf /data/electrs.toml
-    volumes:
-      - ./electrs.toml:/data/electrs.toml
-      - ./electrs_data:/data
+    image: mempool/electrs:latest
     restart: on-failure
-    depends_on: 
-      - bitcoind
-    expose:
-      - '24224'
-      - '60001'
     ports:
-      - '25225:25225'
-      - '60001:60001'
-
-
-volumes:
-  bitcoind_data:
-  electrs_data:
+      - 3009:3009
+      - 60401:60401
+    entrypoint:
+      /bin/electrs
+    command: |
+      --network regtest
+      --daemon-dir /bitcoin_data
+      --daemon-rpc-addr bitcoind:18443
+      --electrum-rpc-addr 0.0.0.0:60401
+      --cookie mempool:mempool
+      --address-search
+      --index-unspendables
+      --http-addr 0.0.0.0:3009
+      --db-dir /electrs
+      --cors '*'
+    volumes:
+    - './electrs_data:/electrs'
+    - './bitcoin_data:/bitcoin_data'
 
 networks: {}
