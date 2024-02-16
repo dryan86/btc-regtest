@@ -43,12 +43,12 @@ services:
       BACKEND_MAINNET_HTTP_HOST: mempool-api
 
       # new stuff below
-      TESTNET_ENABLED: false
-      SIGNET_ENABLED: false
-      LIQUID_ENABLED: false
-      LIQUID_TESTNET_ENABLED: false
-      BISQ_ENABLED: false
-      BISQ_SEPARATE_BACKEND: false
+      TESTNET_ENABLED: "false"
+      SIGNET_ENABLED: "false"
+      LIQUID_ENABLED: "false"
+      LIQUID_TESTNET_ENABLED: "false"
+      BISQ_ENABLED: "false"
+      BISQ_SEPARATE_BACKEND: "false"
       ITEMS_PER_PAGE: 10
       KEEP_BLOCKS_AMOUNT: 8
       NGINX_PROTOCOL: http
@@ -60,14 +60,14 @@ services:
       MEMPOOL_WEBSITE_URL: https://mempool.space
       LIQUID_WEBSITE_URL: https://liquid.network
       BISQ_WEBSITE_URL: https://bisq.markets
-      MINING_DASHBOARD: false
-      AUDIT: false
+      MINING_DASHBOARD: "false"
+      AUDIT: "false"
       MAINNET_BLOCK_AUDIT_START_HEIGHT: 0
       TESTNET_BLOCK_AUDIT_START_HEIGHT: 0
       SIGNET_BLOCK_AUDIT_START_HEIGHT: 0
-      LIGHTNING: false
-      FULL_RBF_ENABLED: false
-      HISTORICAL_PRICE: false
+      LIGHTNING: "false"
+      FULL_RBF_ENABLED: "false"
+      HISTORICAL_PRICE: "false"
 
     restart: on-failure
     ports:
@@ -80,7 +80,7 @@ services:
     environment:
       MEMPOOL_NETWORK: mainnet
       MEMPOOL_BACKEND: electrum
-      MEMPOOL_ENABLED: true
+      MEMPOOL_ENABLED: "true"
       MEMPOOL_HTTP_PORT: 8999
       MEMPOOL_SPAWN_CLUSTER_PROCS: 0
       MEMPOOL_API_URL_PREFIX: /api/v1/
@@ -92,20 +92,20 @@ services:
       MEMPOOL_INITIAL_BLOCKS_AMOUNT: 8
       MEMPOOL_MEMPOOL_BLOCKS_AMOUNT: 8
       MEMPOOL_INDEXING_BLOCKS_AMOUNT: 11000
-      MEMPOOL_BLOCKS_SUMMARIES_INDEXING: false
-      MEMPOOL_USE_SECOND_NODE_FOR_MINFEE: false
+      MEMPOOL_BLOCKS_SUMMARIES_INDEXING: "false"
+      MEMPOOL_USE_SECOND_NODE_FOR_MINFEE: "false"
       MEMPOOL_EXTERNAL_ASSETS: ""
       MEMPOOL_EXTERNAL_MAX_RETRY: 1
       MEMPOOL_EXTERNAL_RETRY_INTERVAL: 0
       MEMPOOL_USER_AGENT: mempool
       MEMPOOL_STDOUT_LOG_MIN_PRIORITY: debug
-      MEMPOOL_AUTOMATIC_BLOCK_REINDEXING: false
+      MEMPOOL_AUTOMATIC_BLOCK_REINDEXING: "false"
       MEMPOOL_POOLS_JSON_URL: https://raw.githubusercontent.com/mempool/mining-pools/master/pools-v2.json
       MEMPOOL_POOLS_JSON_TREE_URL: https://api.github.com/repos/mempool/mining-pools/git/trees/master
-      MEMPOOL_AUDIT: false
-      MEMPOOL_ADVANCED_GBT_AUDIT: false
-      MEMPOOL_ADVANCED_GBT_MEMPOOL: false
-      MEMPOOL_CPFP_INDEXING: false
+      MEMPOOL_AUDIT: "false"
+      MEMPOOL_ADVANCED_GBT_AUDIT: "false"
+      MEMPOOL_ADVANCED_GBT_MEMPOOL: "false"
+      MEMPOOL_CPFP_INDEXING: "false"
       MEMPOOL_DISK_CACHE_BLOCK_INTERVAL: 6
 
       CORE_RPC_HOST: bitcoind
@@ -116,9 +116,9 @@ services:
 
       ELECTRUM_HOST: mempool-electrs
       ELECTRUM_PORT: 60401
-      ELECTRUM_TLS_ENABLED: false
+      ELECTRUM_TLS_ENABLED: "false"
 
-      DATABASE_ENABLED: true
+      DATABASE_ENABLED: "true"
       DATABASE_HOST: mempool-db
       DATABASE_PORT: 3310
       DATABASE_DATABASE: mempool
