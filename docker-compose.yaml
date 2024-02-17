@@ -1,0 +1,118 @@
+version: "3.9"
+
+networks:
+  internal:
+    name: internal
+    external: false
+
+services:
+  # bitcoin core 
+  bitcoin:
+    image: ruimarinho/bitcoin-core
+    restart: unless-stopped
+    ports:
+      - 18443:18443
+    volumes:
+      - './bitcoin_data:/home/bitcoin/.bitcoin'
+    networks:
+      - internal
+    command:
+      -printtoconsole
+      -txindex=1
+      -regtest=1
+      -rpcallowip=0.0.0.0/0
+      -rpcbind=0.0.0.0
+      -rpcuser=mempool
+      -rpcpassword=mempool
+      -fallbackfee=0.00001
+
+  # mempool
+  web:
+    environment:
+      FRONTEND_HTTP_PORT: "8080"
+      BACKEND_MAINNET_HTTP_HOST: "api"
+    image: mempool/frontend:latest
+    restart: on-failure
+    stop_grace_period: 1m
+    command: "./wait-for db:3306 --timeout=720 -- nginx -g 'daemon off;'"
+    ports:
+      - 1234:8080
+    networks:
+      - internal
+
+  api:
+    environment:
+      MEMPOOL_NETWORK: regtest
+      MEMPOOL_BACKEND: electrum
+
+      CORE_RPC_HOST: bitcoin 
+      CORE_RPC_PORT: 18443
+      CORE_RPC_USERNAME: mempool
+      CORE_RPC_PASSWORD: mempool
+
+      DATABASE_ENABLED: "true"
+      DATABASE_HOST: db
+      DATABASE_DATABASE: mempool
+      DATABASE_USERNAME: mempool
+      DATABASE_PASSWORD: mempool
+      STATISTICS_ENABLED: true
+
+      ELECTRUM_HOST: electrs
+      ELECTRUM_PORT: 60401
+      ELECTRUM_TLS_ENABLED: "false"
+
+    image: mempool/backend:latest
+    restart: on-failure
+    stop_grace_period: 1m
+    command: "./wait-for-it.sh db:3306 --timeout=720 --strict -- ./start.sh"
+    volumes:
+      - mempool-api-data:/backend/cache
+    networks:
+      - internal
+
+  db:
+    environment:
+      MYSQL_DATABASE: mempool
+      MYSQL_USER: mempool
+      MYSQL_PASSWORD: mempool
+      MYSQL_ROOT_PASSWORD: admin
+    image: mariadb:10.5.21
+    restart: on-failure
+    stop_grace_period: 1m
+    volumes:
+      - mempool-db-data:/var/lib/mysql
+    networks:
+      - internal
+
+  electrs:
+    image: mempool/electrs:latest
+    restart: on-failure
+    ports:
+      - 3009:3009
+      - 60401:60401
+    entrypoint:
+      /bin/electrs
+    command: |
+      --network regtest
+      --daemon-dir /home/bitcoin/.bitcoin
+      --daemon-rpc-addr bitcoin:18443
+      --electrum-rpc-addr 0.0.0.0:60401
+      --cookie mempool:mempool
+      --address-search
+      --index-unspendables
+      --http-addr 0.0.0.0:3009
+      --db-dir /electrs
+      --cors '*'
+    volumes:
+    - './electrs_data:/electrs'
+    - './bitcoin_data:/home/bitcoin/.bitcoin'
+    networks:
+      - internal
+
+volumes:
+  bitcoin-regtest-data:
+    driver: local
+  mempool-api-data:
+    driver: local
+  mempool-db-data:
+    driver: local
