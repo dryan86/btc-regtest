@@ -135,7 +135,6 @@ services:
       MYSQL_ROOT_PASSWORD: admin
       MYSQL_TCP_PORT: 3310
     restart: on-failure
-    user: "1000:1000"
     volumes:
       - ./mysql_data:/var/lib/mysql
     expose:
