@@ -55,7 +55,7 @@ services:
       DATABASE_DATABASE: mempool
       DATABASE_USERNAME: mempool
       DATABASE_PASSWORD: mempool
-      STATISTICS_ENABLED: true
+      STATISTICS_ENABLED: "true"
 
       ELECTRUM_HOST: electrs
       ELECTRUM_PORT: 60401
