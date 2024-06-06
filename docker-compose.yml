@@ -71,7 +71,7 @@ services:
 
     restart: on-failure
     ports:
-      - 8081:8080
+      - 1234:8080
 
   mempool-api:
     image: mempool/backend:v2.5.0
