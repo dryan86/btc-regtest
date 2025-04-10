@@ -155,6 +155,7 @@ services:
       --address-search
       --index-unspendables
       --http-addr 0.0.0.0:3009
+      --utxos-limit 9000
       --db-dir /electrs
       --cors '*'
     volumes:
