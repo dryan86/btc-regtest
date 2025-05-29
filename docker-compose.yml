@@ -156,6 +156,7 @@ services:
       --index-unspendables
       --http-addr 0.0.0.0:3009
       --utxos-limit 9000
+      --electrum-txs-limit 9000
       --db-dir /electrs
       --cors '*'
     volumes:
