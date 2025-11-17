@@ -1,0 +1,23 @@
+FROM debian:bookworm-slim
+
+ENV BITCOIN_VERSION=30.0
+ENV BITCOIN_URL=https://bitcoincore.org/bin/bitcoin-core-${BITCOIN_VERSION}/bitcoin-${BITCOIN_VERSION}-x86_64-linux-gnu.tar.gz
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget -qO bitcoin.tar.gz "$BITCOIN_URL" && \
+    tar -xzvf bitcoin.tar.gz -C /usr/local --strip-components=1 --exclude=*-qt && \
+    rm bitcoin.tar.gz
+
+RUN mkdir -p /bitcoin_data && \
+    chmod 755 /bitcoin_data
+
+VOLUME ["/bitcoin_data"]
+
+EXPOSE 8332 8333 18332 18333 18443 18444
+
+ENTRYPOINT ["bitcoind"]

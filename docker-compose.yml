@@ -1,6 +1,8 @@
 services:
   bitcoind:
-    image: ruimarinho/bitcoin-core:24
+    build:
+      context: .
+      dockerfile: Dockerfile.bitcoind
     environment:
       BITCOIN_DATA: /bitcoin_data
     volumes:
@@ -19,7 +21,6 @@ services:
       --rpcbind=0.0.0.0:18443
       --rpcport=18443
       --port=18444
-      --mempoolfullrbf=1
     ports:
       - '18443:18443' # rpc port
       - '18444:18444' # p2p port
